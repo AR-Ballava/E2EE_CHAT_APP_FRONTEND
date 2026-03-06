@@ -40,7 +40,7 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
 
   useEffect(() => {
 
-    fetch("http://localhost:8080/api/profile/me", {
+    fetch("https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/me", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -52,7 +52,7 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
 
   useEffect(() => {
 
-    fetch("http://localhost:8080/api/contacts", {
+    fetch("https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/contacts", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -73,7 +73,7 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
 
     users.forEach(email => {
 
-      fetch(`http://localhost:8080/api/profile/${email}`, {
+      fetch(`https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/${email}`, {
         headers: { Authorization: "Bearer " + token }
       })
         .then(res => res.json())
@@ -95,7 +95,7 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
     if (!username.trim()) return;
 
     const res = await fetch(
-      "http://localhost:8080/api/contacts/" + username,
+      "https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/contacts/" + username,
       {
         method: "POST",
         headers: { Authorization: "Bearer " + token }

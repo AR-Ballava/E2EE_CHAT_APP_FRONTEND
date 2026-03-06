@@ -12,8 +12,8 @@ export default function Profile({ token, email, onClose }) {
   useEffect(()=>{
 
     const url = isMe
-      ? "http://localhost:8080/api/profile/me"
-      : `http://localhost:8080/api/profile/${email}`;
+      ? "https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/me"
+      : `https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/${email}`;
 
     fetch(url,{
       headers:{Authorization:"Bearer "+token}
@@ -25,7 +25,7 @@ export default function Profile({ token, email, onClose }) {
 
   function updateProfile(){
 
-    fetch("http://localhost:8080/api/profile/update",{
+    fetch("https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/update",{
       method:"PUT",
       headers:{
         "Content-Type":"application/json",

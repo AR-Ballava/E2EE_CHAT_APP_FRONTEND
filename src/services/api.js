@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8080/api"
+  // baseURL: "https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api"
+  baseURL: "  https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api"
+
 });
 
 export default API;

@@ -91,7 +91,7 @@ export default function ChatWindow({ token, selectedUser }) {
     const conversationId =
       generateConversationId(currentUser,selectedUser);
 
-    fetch(`http://localhost:8080/api/messages/${conversationId}`,{
+    fetch(`  https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/messages/${conversationId}`,{
       headers:{Authorization:"Bearer "+token}
     })
     .then(res=>res.json())
@@ -111,7 +111,7 @@ export default function ChatWindow({ token, selectedUser }) {
 
     if(!selectedUser) return;
 
-    fetch(`http://localhost:8080/api/profile/${selectedUser}`,{
+    fetch(`  https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/${selectedUser}`,{
       headers:{Authorization:"Bearer "+token}
     })
     .then(res=>res.json())
