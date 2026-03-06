@@ -1,0 +1,118 @@
+.profile-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.45);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+}
+
+.profile-card{
+  width:380px;
+  background:white;
+  border-radius:14px;
+  padding:30px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.25);
+  position:relative;
+}
+
+.close-btn{
+  position:absolute;
+  top:12px;
+  right:14px;
+  border:none;
+  background:none;
+  font-size:20px;
+  cursor:pointer;
+}
+
+.profile-header{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.profile-avatar{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid #4CAF50;
+  margin-bottom:10px;
+}
+
+.profile-letter{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  background:#4CAF50;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:34px;
+  font-weight:bold;
+  margin:auto;
+  margin-bottom:10px;
+}
+
+.profile-name{
+  font-size:18px;
+  font-weight:600;
+}
+
+.profile-field{
+  display:flex;
+  flex-direction:column;
+  margin-bottom:14px;
+}
+
+.profile-field label{
+  font-size:13px;
+  color:#666;
+  margin-bottom:4px;
+}
+
+.profile-field input,
+.profile-field textarea{
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #ddd;
+  font-size:14px;
+}
+
+.profile-field textarea{
+  resize:none;
+  height:60px;
+}
+
+.readonly{
+  background:#f2f2f2;
+  cursor:not-allowed;
+}
+
+.update-btn{
+  width:100%;
+  padding:11px;
+  border:none;
+  border-radius:6px;
+  background:#4CAF50;
+  color:white;
+  font-weight:500;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.update-btn:hover{
+  background:#43a047;
+}
+
+.profile-success{
+  text-align:center;
+  margin-top:12px;
+  color:#4CAF50;
+  font-size:14px;
+}
