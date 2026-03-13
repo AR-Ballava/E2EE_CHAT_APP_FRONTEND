@@ -5,8 +5,8 @@ export function connectSocket(token, onMessage, onConnect) {
 
   const client = new Client({
 
-    // webSocketFactory: () => new SockJS("http://3.111.198.202/ws"),
-    webSocketFactory: () => new SockJS("http://3.111.198.202/ws"),
+    // webSocketFactory: () => new SockJS("https://e2ee-chat.duckdns.org/api/ws"),
+    webSocketFactory: () => new SockJS("https://e2ee-chat.duckdns.org/api/ws"),
     
     connectHeaders: {
       Authorization: "Bearer " + token

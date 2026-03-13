@@ -66,7 +66,7 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
 
   useEffect(() => {
 
-    fetch("http://3.111.198.202/api/profile/me", {
+    fetch("https://e2ee-chat.duckdns.org/api/api/profile/me", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -78,7 +78,7 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
 
   useEffect(() => {
 
-    fetch("http://3.111.198.202/api/contacts", {
+    fetch("https://e2ee-chat.duckdns.org/api/api/contacts", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -96,7 +96,7 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
 
   useEffect(() => {
 
-    fetch("http://3.111.198.202/api/messages/preview", {
+    fetch("https://e2ee-chat.duckdns.org/api/api/messages/preview", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -108,7 +108,7 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
 
     users.forEach(email => {
 
-      fetch(`http://3.111.198.202/api/profile/${email}`, {
+      fetch(`https://e2ee-chat.duckdns.org/api/api/profile/${email}`, {
         headers: { Authorization: "Bearer " + token }
       })
         .then(res => res.json())
@@ -129,7 +129,7 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
     if (!username.trim()) return;
 
     const res = await fetch(
-      "http://3.111.198.202/api/contacts/" + username,
+      "https://e2ee-chat.duckdns.org/api/api/contacts/" + username,
       {
         method: "POST",
         headers: { Authorization: "Bearer " + token }

@@ -57,7 +57,7 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
 
           if(msg.receiverId === currentUser && msg.id){
 
-            fetch(`http://3.111.198.202/api/messages/delivered/${msg.id}`,{
+            fetch(`https://e2ee-chat.duckdns.org/api/api/messages/delivered/${msg.id}`,{
               method:"POST",
               headers:{Authorization:"Bearer "+authToken}
             });
@@ -203,7 +203,7 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
     const conversationId =
       generateConversationId(currentUser,selectedUser);
 
-    fetch(`http://3.111.198.202/api/messages/${conversationId}`,{
+    fetch(`https://e2ee-chat.duckdns.org/api/api/messages/${conversationId}`,{
       headers:{Authorization:"Bearer "+token}
     })
     .then(res=>res.json())
@@ -223,7 +223,7 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
 
         if(!m.id) return;
 
-        fetch(`http://3.111.198.202/api/messages/read/${m.id}`,{
+        fetch(`https://e2ee-chat.duckdns.org/api/api/messages/read/${m.id}`,{
           method:"POST",
           headers:{Authorization:"Bearer "+token}
         });
@@ -272,7 +272,7 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
       return;
     }
 
-    fetch(`http://3.111.198.202/api/profile/${selectedUser}`,{
+    fetch(`https://e2ee-chat.duckdns.org/api/api/profile/${selectedUser}`,{
       headers:{Authorization:"Bearer "+token}
     })
     .then(res=>res.json())
