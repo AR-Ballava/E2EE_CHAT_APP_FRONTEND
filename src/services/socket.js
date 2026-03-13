@@ -5,8 +5,8 @@ export function connectSocket(token, onMessage, onConnect) {
 
   const client = new Client({
 
-    // webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-    webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+    // webSocketFactory: () => new SockJS("http://3.111.198.202/ws"),
+    webSocketFactory: () => new SockJS("http://3.111.198.202/ws"),
     
     connectHeaders: {
       Authorization: "Bearer " + token

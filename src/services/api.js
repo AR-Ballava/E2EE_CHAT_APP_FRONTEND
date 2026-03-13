@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8080/api"
+  baseURL: "http://3.111.198.202/api"
 });
 
 /* ADD ACCESS TOKEN TO EVERY REQUEST */
@@ -43,7 +43,7 @@ API.interceptors.response.use(
         const refreshToken = localStorage.getItem("refreshToken");
 
         const res = await axios.post(
-          "http://localhost:8080/api/auth/refresh",
+          "http://3.111.198.202/api/auth/refresh",
           { refreshToken } // ✅ SEND JSON
         );
 
