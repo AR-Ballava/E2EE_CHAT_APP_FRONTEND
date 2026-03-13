@@ -2,7 +2,7 @@
   "routes": [
     {
       "src": "^/api/(.*)",
-      "dest": "https://e2ee-chat.duckdns.org/$1"
+      "dest": "https://e2ee-chat.duckdns.org/api/$1"
     },
     {
       "src": "^/(.*)",
