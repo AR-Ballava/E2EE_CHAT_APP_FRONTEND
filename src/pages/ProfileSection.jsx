@@ -1,4 +1,5 @@
-import "../styles/profileSection.css"
+import { useState } from "react";
+import "../styles/profileSection.css";
 
 export default function ProfileSection({
   myProfile,
@@ -6,6 +7,8 @@ export default function ProfileSection({
   setShowProfile,
   setProfileEmail
 }) {
+
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   function myAvatar() {
 
@@ -32,27 +35,88 @@ export default function ProfileSection({
     );
   }
 
+  function logout(){
+
+    localStorage.removeItem("token");
+
+    window.location.href = "/";
+
+  }
+
   return (
 
-    <div
-      className="sidebar-profile-container"
-      onClick={() => {
-        setProfileEmail(null);
-        setShowProfile(true);
-      }}
-    >
+    <>
 
-      <div className="sidebar-profile">
-        {myAvatar()}
+      <div className="sidebar-profile-container">
+
+        {/* LEFT SIDE (PROFILE CLICK AREA) */}
+
+        <div
+          className="sidebar-profile-left"
+          onClick={() => {
+            setProfileEmail(null);
+            setShowProfile(true);
+          }}
+        >
+
+          <div className="sidebar-profile">
+            {myAvatar()}
+          </div>
+
+          {myProfile && (
+            <div className="sidebar-name">
+              {myProfile.username || myProfile.email}
+            </div>
+          )}
+
+        </div>
+
+        {/* RIGHT SIDE (LOGOUT BUTTON) */}
+
+        <button
+          className="logout-btn"
+          onClick={() => setShowLogoutConfirm(true)}
+        >
+          Logout
+        </button>
+
       </div>
 
-      {myProfile && (
-        <div className="sidebar-name">
-          {myProfile.username || myProfile.email}
+      {/* CONFIRMATION MODAL */}
+
+      {showLogoutConfirm && (
+
+        <div className="logout-overlay">
+
+          <div className="logout-modal">
+
+            <h3>Are you sure you want to logout?</h3>
+
+            <div className="logout-actions">
+
+              <button
+                className="logout-yes"
+                onClick={logout}
+              >
+                Yes
+              </button>
+
+              <button
+                className="logout-no"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                No
+              </button>
+
+            </div>
+
+          </div>
+
         </div>
+
       )}
 
-    </div>
+    </>
 
   );
 }
