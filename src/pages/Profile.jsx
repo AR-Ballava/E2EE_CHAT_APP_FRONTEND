@@ -14,8 +14,8 @@ export default function Profile({ token, email, onClose }) {
   useEffect(()=>{
 
     const url = isMe
-      ? "https://e2ee-chat.duckdns.org/api/api/profile/me"
-      : `https://e2ee-chat.duckdns.org/api/api/profile/${email}`;
+      ? "https://e2ee-chat.duckdns.org/api/profile/me"
+      : `https://e2ee-chat.duckdns.org/api/profile/${email}`;
 
     fetch(url,{
       headers:{Authorization:"Bearer "+token}
@@ -27,7 +27,7 @@ export default function Profile({ token, email, onClose }) {
 
   function updateProfile(){
 
-    fetch("https://e2ee-chat.duckdns.org/api/api/profile/update",{
+    fetch("https://e2ee-chat.duckdns.org/api/profile/update",{
       method:"PUT",
       headers:{
         "Content-Type":"application/json",
