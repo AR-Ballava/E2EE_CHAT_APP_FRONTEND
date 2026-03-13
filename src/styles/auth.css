@@ -1,0 +1,175 @@
+/* FULL PAGE WRAPPER */
+
+.auth-container{
+  min-height:100vh;
+  width:100%;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  background:
+    radial-gradient(circle at 25% 30%, #2a2a2a, transparent 40%),
+    radial-gradient(circle at 80% 70%, #1a1a1a, transparent 40%),
+    linear-gradient(140deg,#000000,#0d0d0d,#161616);
+
+  font-family:"Inter","Segoe UI",sans-serif;
+}
+
+
+
+/* MAIN CARD */
+
+.auth-card{
+
+  width:860px;
+  height:520px;
+
+  display:flex;
+
+  border-radius:12px;
+
+  overflow:hidden;
+
+  border:1px solid #222;
+
+  box-shadow:0 25px 60px rgba(0,0,0,0.6);
+
+}
+
+
+
+/* LEFT SIDE FORM */
+
+.auth-form{
+
+  flex:1;
+
+  background:#0f0f0f;
+
+  padding:40px;
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+
+}
+
+
+
+.auth-form h2{
+  color:white;
+  margin-bottom:20px;
+}
+
+
+
+/* INPUT */
+
+.auth-form input{
+
+  width:100%;
+
+  padding:11px;
+
+  margin-bottom:12px;
+
+  border-radius:6px;
+
+  border:1px solid #2a2a2a;
+
+  background:#0a0a0a;
+
+  color:white;
+
+  outline:none;
+
+}
+
+.auth-form input:focus{
+  border-color:#555;
+}
+
+
+
+/* BUTTON */
+
+.auth-form button{
+
+  margin-top:10px;
+
+  padding:11px;
+
+  border-radius:6px;
+
+  border:none;
+
+  background:#c2baba;
+
+  color:black;
+
+  font-weight:600;
+
+  cursor:pointer;
+
+}
+
+
+
+/* RIGHT SIDE GREETING */
+
+.auth-welcome{
+
+  flex:1;
+
+  background:linear-gradient(140deg,#1a1a1a,#0d0d0d);
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+
+  text-align:center;
+
+  padding:40px;
+
+  color:white;
+
+}
+
+
+
+.auth-welcome h2{
+  margin-bottom:10px;
+}
+
+
+
+.auth-welcome p{
+  color:#aaa;
+  margin-bottom:20px;
+}
+
+
+
+/* SWITCH BUTTON */
+
+.switch-btn{
+
+  padding:8px 18px;
+
+  border-radius:6px;
+
+  border:1px solid #444;
+
+  background:transparent;
+
+  color:white;
+
+  cursor:pointer;
+
+}
+
+.switch-btn:hover{
+  background:#111;
+}

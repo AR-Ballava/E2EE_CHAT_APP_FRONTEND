@@ -6,14 +6,16 @@ export default function Profile({ token, email, onClose }) {
 
   const [profile,setProfile] = useState(null);
   const [success,setSuccess] = useState("");
+  const [showAvatar,setShowAvatar] = useState(false);
+  
 
   const isMe = !email;
 
   useEffect(()=>{
 
     const url = isMe
-      ? "https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/me"
-      : `https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/${email}`;
+      ? "http://localhost:8080/api/profile/me"
+      : `http://localhost:8080/api/profile/${email}`;
 
     fetch(url,{
       headers:{Authorization:"Bearer "+token}
@@ -25,7 +27,7 @@ export default function Profile({ token, email, onClose }) {
 
   function updateProfile(){
 
-    fetch("https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/update",{
+    fetch("http://localhost:8080/api/profile/update",{
       method:"PUT",
       headers:{
         "Content-Type":"application/json",
@@ -41,10 +43,11 @@ export default function Profile({ token, email, onClose }) {
 
         if(profile.profilePicture){
             return (
-            <img
+              <img
                 src={profile.profilePicture}
                 className="profile-avatar"
-            />
+                onClick={()=>setShowAvatar(true)}
+              />
             );
         }
 
@@ -65,11 +68,73 @@ export default function Profile({ token, email, onClose }) {
 
     }
 
-  if(!profile) return null;
+  if(!profile){
+    return (
+      <div className="profile-overlay">
+        <div className="profile-card">
+          Loading profile...
+        </div>
+      </div>
+    );
+  }
+
+  //FORMAT LAST SEEN
+
+  function formatLastSeen(timestamp){
+    if(!timestamp) return "";
+
+    const now = new Date();
+    const last = new Date(timestamp);
+
+    const diff = now - last;
+
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+
+    const time = last.toLocaleTimeString([],{
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+
+    const monthDay = last.toLocaleDateString([],{
+      month:"long",
+      day:"numeric"
+    });
+
+    const monthDayYear = last.toLocaleDateString([],{
+      month:"long",
+      day:"numeric",
+      year:"numeric"
+    });
+
+    if(minutes < 60) return `${minutes} min ago`;
+    if(hours < 24) return `today ${time}`;
+    if(now.getFullYear() === last.getFullYear()) return `${monthDay}, ${time}`;
+    return `${monthDayYear}, ${time}`;
+
+  }
+
 
   return(
 
     <div className="profile-overlay">
+
+      {showAvatar && profile.profilePicture && (
+
+        <div
+          className="avatar-viewer"
+          onClick={()=>setShowAvatar(false)}
+        >
+
+          <img
+            src={profile.profilePicture}
+            className="avatar-large"
+            onClick={(e)=>e.stopPropagation()}
+          />
+
+        </div>
+
+      )}
 
       <div className="profile-card">
 
@@ -84,9 +149,19 @@ export default function Profile({ token, email, onClose }) {
 
           {avatar()}
 
-          <div className="profile-name">
-            {profile.username || profile.email}
-          </div>
+        <div className="profile-status">
+
+          {profile.online ? (
+            <span className="online-status">
+              online
+            </span>
+          ) : (
+            <span className="last-seen">
+              last seen {formatLastSeen(profile.lastSeen)}
+            </span>
+          )}
+
+        </div>
 
         </div>
 

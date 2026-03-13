@@ -7,12 +7,22 @@ export default function Chat({ token }) {
 
   const [selectedUser, setSelectedUser] = useState(null);
 
+  /* GLOBAL CONTACT STATE */
+  const [contacts, setContacts] = useState([]);
+
+  /* GLOBAL MESSAGE PREVIEWS */
+  const [messagePreviews, setMessagePreviews] = useState({});
+
   return (
 
     <div className="chat-container">
 
       <ContactPanel
         token={token}
+        contacts={contacts}
+        setContacts={setContacts}
+        messagePreviews={messagePreviews}
+        setMessagePreviews={setMessagePreviews}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
       />
@@ -20,10 +30,11 @@ export default function Chat({ token }) {
       <ChatWindow
         token={token}
         selectedUser={selectedUser}
+        setMessagePreviews={setMessagePreviews}
+        setContacts={setContacts}
       />
 
     </div>
 
   );
-
 }

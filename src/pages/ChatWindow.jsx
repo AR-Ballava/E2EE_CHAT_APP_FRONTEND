@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { connectSocket } from "../services/socket";
 import { jwtDecode } from "jwt-decode";
-import { getAvatarColor } from "../utils/avatarColor";
-import Profile from "./Profile";
 import "../styles/chatWindow.css";
+import ChatHeader from "./ChatHeader";
+import MessageArea from "./MessageArea";
+import MessageInput from "./MessageInput";
+import Profile from "./Profile";
 
-export default function ChatWindow({ token, selectedUser }) {
+export default function ChatWindow({ token, selectedUser, setMessagePreviews, setContacts}) {
 
   const decoded = jwtDecode(token);
   const currentUser = decoded.sub;
@@ -20,104 +22,265 @@ export default function ChatWindow({ token, selectedUser }) {
   const bottomRef = useRef(null);
   const selectedUserRef = useRef(null);
 
+  const [isTyping,setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
+
   function generateConversationId(a,b){
     return a<b ? `${a}_${b}` : `${b}_${a}`;
   }
-
-  /* keep selected user reference */
 
   useEffect(()=>{
     selectedUserRef.current = selectedUser;
   },[selectedUser]);
 
-  /* SOCKET CONNECTION (connect once) */
+  /* SOCKET CONNECTION */
 
   useEffect(()=>{
 
-    const socketClient = connectSocket(
+    function startSocket(authToken){
 
-      token,
+      const socketClient = connectSocket(
 
-      (msg)=>{
+        authToken,
 
-        const activeUser = selectedUserRef.current;
+        /* MESSAGE RECEIVED */
 
-        const isCurrentChat =
-          (msg.senderId===currentUser && msg.receiverId===activeUser) ||
-          (msg.senderId===activeUser && msg.receiverId===currentUser);
+        (msg)=>{
 
-        if(isCurrentChat){
+          const activeUser = selectedUserRef.current;
 
-          setMessages(prev=>{
+          const isCurrentChat =
+            (msg.senderId===currentUser && msg.receiverId===activeUser) ||
+            (msg.senderId===activeUser && msg.receiverId===currentUser);
 
-            /* prevent duplicates */
+          /* MARK DELIVERED */
 
-            const exists = prev.some(m =>
-              m.senderId === msg.senderId &&
-              m.receiverId === msg.receiverId &&
-              m.content === msg.content &&
-              m.sentAt === msg.sentAt
-            );
+          if(msg.receiverId === currentUser && msg.id){
 
-            if(exists) return prev;
+            fetch(`http://localhost:8080/api/messages/delivered/${msg.id}`,{
+              method:"POST",
+              headers:{Authorization:"Bearer "+authToken}
+            });
 
-            return [...prev,msg];
+          }
+
+          if(isCurrentChat){
+
+            setMessages(prev=>{
+
+              const index = prev.findIndex(m => m.id === msg.id);
+
+              if(index !== -1){
+
+                const updated = [...prev];
+                updated[index] = { ...updated[index], ...msg };
+                return updated;
+
+              }
+
+              return [...prev,msg];
+
+            });
+
+          }
+
+            /* UPDATE CONTACT PREVIEW */
+
+            const otherUser =
+              msg.senderId === currentUser ? msg.receiverId : msg.senderId;
+
+            /* UPDATE PREVIEW */
+
+            setMessagePreviews(prev => ({
+              ...prev,
+              [otherUser]: {
+                content: msg.content,
+                sentAt: msg.sentAt
+              }
+            }));
+
+            /* MOVE CONTACT TO TOP */
+
+            setContacts(prev => {
+
+              const filtered = prev.filter(c => c !== otherUser);
+              return [otherUser, ...filtered];
+
+            });
+
+        },
+
+        /* SOCKET CONNECTED */
+
+        (connectedClient)=>{
+
+          setClient(connectedClient);
+          socketRef.current = connectedClient;
+
+          /* STATUS UPDATES */
+
+          connectedClient.subscribe("/user/queue/status",(payload)=>{
+
+            const statusMsg = JSON.parse(payload.body);
+
+            setMessages(prev => {
+
+              let changed = false;
+
+              const updated = prev.map(m => {
+
+                if(m.id === statusMsg.id && m.status !== statusMsg.status){
+                  changed = true;
+                  return { ...m, status: statusMsg.status };
+                }
+
+                return m;
+
+              });
+
+              return changed ? updated : prev;
+
+            });
+
+          });
+
+          connectedClient.subscribe("/user/queue/typing",(payload)=>{
+
+            const typingMsg = JSON.parse(payload.body);
+
+            if(typingMsg.senderId === selectedUserRef.current){
+
+              setIsTyping(typingMsg.typing);
+
+            }
 
           });
 
         }
 
-      },
+      );
 
-      (connectedClient)=>{
-        setClient(connectedClient);
-        socketRef.current = connectedClient;
+      socketRef.current = socketClient;
+
+    }
+
+    startSocket(token);
+
+    /* RECONNECT SOCKET WHEN TOKEN REFRESHES */
+
+    function reconnectSocket(){
+
+      const newToken = localStorage.getItem("token");
+
+      if(socketRef.current){
+        socketRef.current.deactivate();
       }
 
-    );
+      startSocket(newToken);
+
+    }
+
+    window.addEventListener("tokenRefreshed", reconnectSocket);
 
     return ()=>{
       if(socketRef.current) socketRef.current.deactivate();
+      window.removeEventListener("tokenRefreshed", reconnectSocket);
     };
 
   },[token]);
+
+
 
   /* LOAD MESSAGE HISTORY */
 
   useEffect(()=>{
 
-    if(!selectedUser) return;
+    if(!selectedUser){
+      setMessages([]);
+      return;
+    }
 
     const conversationId =
       generateConversationId(currentUser,selectedUser);
 
-    fetch(`  https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/messages/${conversationId}`,{
+    fetch(`http://localhost:8080/api/messages/${conversationId}`,{
       headers:{Authorization:"Bearer "+token}
     })
     .then(res=>res.json())
-    .then(data=>setMessages(data));
+    .then(setMessages);
 
-  },[selectedUser]);
+  },[selectedUser,token]);
 
-  /* SCROLL TO BOTTOM */
+
+
+  /* MARK READ */
 
   useEffect(()=>{
-    bottomRef.current?.scrollIntoView({behavior:"smooth"});
+
+    messages
+      .filter(m=>m.receiverId===currentUser && m.status!=="READ")
+      .forEach(m=>{
+
+        if(!m.id) return;
+
+        fetch(`http://localhost:8080/api/messages/read/${m.id}`,{
+          method:"POST",
+          headers:{Authorization:"Bearer "+token}
+        });
+
+      });
+
   },[messages]);
 
-  /* LOAD USER PROFILE */
+
+
+  /* AUTO SCROLL */
+
+  const firstLoadRef = useRef(true);
+
+  useEffect(() => {
+
+    if (!bottomRef.current) return;
+
+    if (firstLoadRef.current) {
+
+      /* INSTANT SCROLL ON CHAT OPEN */
+      bottomRef.current.scrollIntoView({ behavior: "auto" });
+      firstLoadRef.current = false;
+
+    } else {
+
+      /* SMOOTH SCROLL ONLY FOR NEW MESSAGES */
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+
+    }
+
+  }, [messages]);
+
+
+
+  useEffect(() => {
+    firstLoadRef.current = true;
+  }, [selectedUser]);
+
+  /* LOAD PROFILE */
 
   useEffect(()=>{
 
-    if(!selectedUser) return;
+    if(!selectedUser){
+      setUserProfile(null);
+      return;
+    }
 
-    fetch(`  https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/${selectedUser}`,{
+    fetch(`http://localhost:8080/api/profile/${selectedUser}`,{
       headers:{Authorization:"Bearer "+token}
     })
     .then(res=>res.json())
     .then(setUserProfile);
 
-  },[selectedUser]);
+  },[selectedUser,token]);
+
+
 
   /* SEND MESSAGE */
 
@@ -130,7 +293,8 @@ export default function ChatWindow({ token, selectedUser }) {
       senderId: currentUser,
       receiverId: selectedUser,
       content: text,
-      sentAt: new Date().toISOString()
+      sentAt: new Date().toISOString(),
+      status:"SENT"
     };
 
     client.publish({
@@ -138,200 +302,120 @@ export default function ChatWindow({ token, selectedUser }) {
       body:JSON.stringify(msg)
     });
 
-    /* optimistic UI */
+    /* UPDATE PREVIEW IMMEDIATELY */
 
-    setMessages(prev=>[...prev,msg]);
+    setMessagePreviews(prev => ({
+      ...prev,
+      [selectedUser]: {
+        content: text,
+        sentAt: msg.sentAt
+      }
+    }));
+
+    /* MOVE CONTACT TO TOP */
+
+    setContacts(prev => {
+
+      const filtered = prev.filter(c => c !== selectedUser);
+      return [selectedUser, ...filtered];
+
+    });
+
+    /* UPDATE PREVIEW IMMEDIATELY */
+
+
 
     setText("");
 
   }
 
-  /* TIME FORMAT */
 
-  function formatTime(timestamp){
+  // Typing Indicator
 
-    if(!timestamp) return "";
+  function sendTyping(status){
 
-    const d = new Date(timestamp);
+    if(!client || !client.connected) return;
+    if(!selectedUser) return;
 
-    return d.toLocaleTimeString([],{
-      hour:"2-digit",
-      minute:"2-digit"
+    const typingMsg = {
+      senderId: currentUser,
+      receiverId: selectedUser,
+      typing: status
+    };
+
+    client.publish({
+      destination:"/app/chat.typing",
+      body:JSON.stringify(typingMsg)
     });
 
-  }
+    /* AUTO STOP TYPING AFTER 1.5s */
 
-  /* AVATAR */
+    if(status){
 
-  function avatar(){
+      clearTimeout(typingTimeoutRef.current);
 
-    if(!userProfile) return null;
+      typingTimeoutRef.current = setTimeout(()=>{
 
-    if(userProfile.profilePicture){
-      return <img src={userProfile.profilePicture} alt=""/>;
+        client.publish({
+          destination:"/app/chat.typing",
+          body:JSON.stringify({
+            senderId: currentUser,
+            receiverId: selectedUser,
+            typing:false
+          })
+        });
+
+      },1000);
+
     }
 
-    const letter =
-      (userProfile.username || userProfile.email)
-      .charAt(0)
-      .toUpperCase();
-
-    return (
-      <div
-        className="chat-avatar-letter"
-        style={{
-          backgroundColor:getAvatarColor(userProfile.email)
-        }}
-      >
-        {letter}
-      </div>
-    );
-
   }
 
-  /* LAST SEEN FORMAT */
-
-  function formatLastSeen(timestamp){
-
-    if(!timestamp) return "";
-
-    const now = new Date();
-    const last = new Date(timestamp);
-
-    const diff = now-last;
-
-    const seconds = Math.floor(diff/1000);
-    const minutes = Math.floor(diff/(1000*60));
-    const hours = Math.floor(diff/(1000*60*60));
-    const days = Math.floor(diff/(1000*60*60*24));
-
-    if(seconds<15) return "just now";
-    if(minutes<60) return `${minutes} min ago`;
-    if(hours<24) return `${hours} hour${hours>1?"s":""} ago`;
-    if(days===1) return "yesterday";
-    if(days<7) return `${days} days ago`;
-
-    if(days<365){
-      return last.toLocaleDateString([],{
-        month:"short",
-        day:"numeric"
-      });
-    }
-
-    return last.toLocaleDateString([],{
-      year:"numeric",
-      month:"short",
-      day:"numeric"
-    });
-
-  }
 
   return(
 
     <>
 
-    <div className="chat-panel">
+      <div className="chat-panel">
 
-      <div className="chat-header">
+        <div className="chat-header">
 
-        {selectedUser && userProfile ?(
+          <ChatHeader
+            selectedUser={selectedUser}
+            userProfile={userProfile}
+            setShowProfile={setShowProfile}
+            isTyping={isTyping}
+          />
 
-          <div className="chat-header-inner">
+        </div>
 
-            <div
-              className="chat-user"
-              onClick={()=>setShowProfile(true)}
-            >
+        <MessageArea
+          messages={messages}
+          currentUser={currentUser}
+          bottomRef={bottomRef}
+          selectedUser={selectedUser}
+        />
 
-              <div className="chat-user-avatar">
-                {avatar()}
-              </div>
+        {selectedUser && (
 
-              <div className="chat-user-name">
-                {userProfile.username || userProfile.email}
-              </div>
+          <MessageInput
+            text={text}
+            setText={setText}
+            send={send}
+            sendTyping={sendTyping}
+          />
 
-            </div>
-
-            <div className="chat-user-status">
-
-              {userProfile.online ?(
-                <span className="online-status">
-                  online
-                </span>
-              ):(
-                <span className="last-seen">
-                  last seen {formatLastSeen(userProfile.lastSeen)}
-                </span>
-              )}
-
-            </div>
-
-          </div>
-
-        ):(
-          <div>Select a contact</div>
         )}
 
       </div>
 
-      <div className="message-area">
-
-        {messages.map((m)=>(
-          <div
-            key={(m.sentAt || "") + m.senderId + m.content}
-            className={
-              m.senderId===currentUser
-              ?"message sent"
-              :"message received"
-            }
-          >
-
-            <div className="text">
-              {m.content}
-            </div>
-
-            <div className="time">
-              {formatTime(m.sentAt)}
-            </div>
-
-          </div>
-        ))}
-
-        <div ref={bottomRef}></div>
-
-      </div>
-
-      {selectedUser &&(
-
-        <div className="input-area">
-
-          <input
-            value={text}
-            placeholder="Type message..."
-            onChange={(e)=>setText(e.target.value)}
-            onKeyDown={(e)=>{
-              if(e.key==="Enter") send();
-            }}
-          />
-
-          <button onClick={send}>
-            Send
-          </button>
-
-        </div>
-
+      {showProfile && (
+        <Profile
+          token={token}
+          email={selectedUser}
+          onClose={()=>setShowProfile(false)}
+        />
       )}
-
-    </div>
-
-    {showProfile &&(
-      <Profile
-        token={token}
-        email={selectedUser}
-        onClose={()=>setShowProfile(false)}
-      />
-    )}
 
     </>
 

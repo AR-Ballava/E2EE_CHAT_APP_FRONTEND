@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import ProfileSection from "./ProfileSection";
+import ContactList from "./ContactList";
 import Profile from "./Profile";
 import "../styles/contactPanel.css";
 
-export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
+export default function ContactPanel({ token, contacts, setContacts, messagePreviews, setMessagePreviews, selectedUser, setSelectedUser }) {
 
-  const [contacts, setContacts] = useState([]);
   const [contactProfiles, setContactProfiles] = useState({});
   const [newContact, setNewContact] = useState("");
 
@@ -13,34 +14,59 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
 
   const [myProfile, setMyProfile] = useState(null);
 
-  // avatar background color generator
   function getAvatarColor(text) {
 
-    const colors = [
-      "#4CAF50",
-      "#2196F3",
-      "#FF9800",
-      "#9C27B0",
-      "#E91E63"
-    ];
-
+    const colors = ["#4CAF50","#2196F3","#FF9800","#9C27B0","#E91E63"];
     let hash = 0;
 
     for (let i = 0; i < text.length; i++) {
       hash = text.charCodeAt(i) + ((hash << 5) - hash);
     }
 
-    const index = Math.abs(hash) % colors.length;
+    return colors[Math.abs(hash) % colors.length];
+  }
 
-    return colors[index];
+  function formatPreviewTime(timestamp) {
 
+    if (!timestamp) return "";
+
+    const now = new Date();
+    const msgDate = new Date(timestamp);
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const msgDay = new Date(msgDate);
+    msgDay.setHours(0,0,0,0);
+
+    if (msgDay.getTime() === today.getTime()) {
+
+      return msgDate.toLocaleTimeString([],{
+        hour:"2-digit",
+        minute:"2-digit"
+      });
+
+    }
+
+    if (msgDay.getTime() === yesterday.getTime()) {
+      return "Yesterday";
+    }
+
+    return msgDate.toLocaleDateString([],{
+      day:"2-digit",
+      month:"2-digit",
+      year:"2-digit"
+    });
   }
 
   /* LOAD MY PROFILE */
 
   useEffect(() => {
 
-    fetch("https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/me", {
+    fetch("http://localhost:8080/api/profile/me", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -52,7 +78,7 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
 
   useEffect(() => {
 
-    fetch("https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/contacts", {
+    fetch("http://localhost:8080/api/contacts", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -60,20 +86,29 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
 
         const users = data.map(c => c.contactUserId);
         setContacts(users);
-
         loadContactProfiles(users);
 
       });
 
   }, [token]);
 
-  /* LOAD PROFILE FOR EACH CONTACT */
+  /* LOAD MESSAGE PREVIEWS */
+
+  useEffect(() => {
+
+    fetch("http://localhost:8080/api/messages/preview", {
+      headers: { Authorization: "Bearer " + token }
+    })
+      .then(res => res.json())
+      .then(setMessagePreviews);
+
+  }, [token]);
 
   function loadContactProfiles(users) {
 
     users.forEach(email => {
 
-      fetch(`https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/profile/${email}`, {
+      fetch(`http://localhost:8080/api/profile/${email}`, {
         headers: { Authorization: "Bearer " + token }
       })
         .then(res => res.json())
@@ -87,7 +122,6 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
         });
 
     });
-
   }
 
   async function addContact(username) {
@@ -95,7 +129,7 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
     if (!username.trim()) return;
 
     const res = await fetch(
-      "https://noncommunicating-princess-sinusoidally.ngrok-free.dev/api/contacts/" + username,
+      "http://localhost:8080/api/contacts/" + username,
       {
         method: "POST",
         headers: { Authorization: "Bearer " + token }
@@ -109,153 +143,53 @@ export default function ContactPanel({ token, selectedUser, setSelectedUser }) {
       setNewContact("");
 
     }
-
-  }
-
-  /* MY PROFILE AVATAR */
-
-  function myAvatar() {
-
-    if (!myProfile) return null;
-
-    if (myProfile.profilePicture) {
-      return <img src={myProfile.profilePicture} alt="" />;
-    }
-
-    const letter = (myProfile.username || myProfile.email)
-      .charAt(0)
-      .toUpperCase();
-
-    return (
-      <div
-        className="avatar-letter"
-        style={{
-          backgroundColor: getAvatarColor(myProfile.email)
-        }}
-      >
-        {letter}
-      </div>
-    );
-
-  }
-
-  /* CONTACT AVATAR */
-
-  function contactAvatar(email) {
-
-    const profile = contactProfiles[email];
-
-    if (profile && profile.profilePicture) {
-      return <img src={profile.profilePicture} alt="" />;
-    }
-
-    const letter = (profile?.username || email)
-      .charAt(0)
-      .toUpperCase();
-
-    return (
-      <div
-        className="avatar-letter"
-        style={{
-          backgroundColor: getAvatarColor(email)
-        }}
-      >
-        {letter}
-      </div>
-    );
-
   }
 
   return (
-
     <>
-    
-    <div className="contact-panel">
+      <div className="contact-panel">
 
-      {/* MY PROFILE HEADER */}
-
-      <div
-        className="sidebar-profile-container"
-        onClick={() => {
-          setProfileEmail(null);
-          setShowProfile(true);
-        }}
-      >
-
-        <div className="sidebar-profile">
-          {myAvatar()}
-        </div>
-
-        {myProfile && (
-          <div className="sidebar-name">
-            {myProfile.username || myProfile.email}
-          </div>
-        )}
-
-      </div>
-
-      <h3>Contacts</h3>
-
-      <div className="add-contact">
-
-        <input
-          placeholder="username"
-          value={newContact}
-          onChange={(e) => setNewContact(e.target.value)}
+        <ProfileSection
+          token={token}
+          myProfile={myProfile}
+          getAvatarColor={getAvatarColor}
+          setShowProfile={setShowProfile}
+          setProfileEmail={setProfileEmail}
         />
 
-        <button onClick={() => addContact(newContact)}>
-          Add
-        </button>
+        <h3>Contacts</h3>
+
+        <div className="add-contact">
+          <input
+            placeholder="email or username"
+            value={newContact}
+            onChange={(e) => setNewContact(e.target.value)}
+          />
+          <button onClick={() => addContact(newContact)}>Add</button>
+        </div>
+
+        <ContactList
+          contacts={contacts}
+          setContacts={setContacts}
+          contactProfiles={contactProfiles}
+          messagePreviews={messagePreviews}
+          selectedUser={selectedUser}
+          setSelectedUser={setSelectedUser}
+          formatPreviewTime={formatPreviewTime}
+          getAvatarColor={getAvatarColor}
+          setShowProfile={setShowProfile}
+          setProfileEmail={setProfileEmail}
+        />
 
       </div>
 
-      <div className="contact-list">
-
-        {contacts.map((c, i) => (
-
-          <div
-            key={i}
-            className={`contact-item ${selectedUser === c ? "active" : ""}`}
-          >
-
-            <div
-              className="contact-avatar"
-              onClick={() => {
-                setProfileEmail(c);
-                setShowProfile(true);
-              }}
-            >
-              {contactAvatar(c)}
-            </div>
-
-            <div
-              className="contact-name"
-              onClick={() => setSelectedUser(c)}
-            >
-              {contactProfiles[c]?.username || c}
-            </div>
-
-          </div>
-
-        ))}
-
-      </div>
-
-    </div>
-
-    {/* PROFILE MODAL */}
-
-    {showProfile && (
-      <Profile
-        token={token}
-        email={profileEmail}
-        onClose={() => setShowProfile(false)}
-      />
-    )}
-
+      {showProfile && (
+        <Profile
+          token={token}
+          email={profileEmail}
+          onClose={() => setShowProfile(false)}
+        />
+      )}
     </>
-
   );
-
 }

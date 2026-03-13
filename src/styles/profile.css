@@ -1,68 +1,132 @@
+OVERLAY
+
 .profile-overlay{
   position:fixed;
   top:0;
   left:0;
   width:100%;
   height:100%;
-  background:rgba(0,0,0,0.45);
+
   display:flex;
   justify-content:center;
   align-items:center;
+
   z-index:1000;
+
+  background:
+    radial-gradient(circle at 25% 30%, #4a4a4a33, transparent 45%),
+    radial-gradient(circle at 75% 70%, #3a3a3a33, transparent 45%),
+    linear-gradient(140deg,#121212,#1b1b1b,#242424);
 }
+
+
+
+/* PROFILE CARD */
 
 .profile-card{
   width:380px;
-  background:white;
+
+  background:#2b2b2b;
+
   border-radius:14px;
+
   padding:30px;
-  box-shadow:0 20px 40px rgba(0,0,0,0.25);
+
+  border:1px solid rgba(255,255,255,0.08);
+
+  box-shadow:0 20px 40px rgba(0,0,0,0.35);
+
   position:relative;
+
+  color:white;
 }
+
+
+
+/* CLOSE BUTTON */
 
 .close-btn{
   position:absolute;
   top:12px;
   right:14px;
+
   border:none;
   background:none;
+
   font-size:20px;
+
   cursor:pointer;
+
+  color:#ddd;
 }
+
+.close-btn:hover{
+  color:white;
+}
+
+
+
+/* HEADER */
 
 .profile-header{
   text-align:center;
   margin-bottom:20px;
 }
 
+
+
+/* AVATAR */
+
 .profile-avatar{
   width:90px;
   height:90px;
+
   border-radius:50%;
+
   object-fit:cover;
-  border:3px solid #4CAF50;
+
+  border:2px solid rgba(255,255,255,0.2);
+
   margin-bottom:10px;
 }
+
+
+
+/* LETTER AVATAR */
 
 .profile-letter{
   width:90px;
   height:90px;
+
   border-radius:50%;
-  background:#4CAF50;
+
+  background:#444;
+
   color:white;
+
   display:flex;
   align-items:center;
   justify-content:center;
+
   font-size:34px;
   font-weight:bold;
+
   margin:auto;
   margin-bottom:10px;
 }
+
+
+
+/* NAME */
 
 .profile-name{
   font-size:18px;
   font-weight:600;
 }
+
+
+
+/* FORM FIELD */
 
 .profile-field{
   display:flex;
@@ -72,16 +136,31 @@
 
 .profile-field label{
   font-size:13px;
-  color:#666;
+  color:#ccc;
   margin-bottom:4px;
 }
 
+
+
+/* INPUT */
+
 .profile-field input,
 .profile-field textarea{
+
   padding:10px;
+
   border-radius:6px;
-  border:1px solid #ddd;
+
+  border:1px solid #555;
+
+  background:#3a3a3a;
+
+  color:white;
+
   font-size:14px;
+
+  outline:none;
+
 }
 
 .profile-field textarea{
@@ -89,30 +168,98 @@
   height:60px;
 }
 
+
+
+/* READONLY */
+
 .readonly{
-  background:#f2f2f2;
+  background:#404040;
   cursor:not-allowed;
 }
+
+
+
+/* UPDATE BUTTON */
 
 .update-btn{
   width:100%;
   padding:11px;
+
   border:none;
+
   border-radius:6px;
-  background:#4CAF50;
-  color:white;
-  font-weight:500;
+
+  background:white;
+
+  color:black;
+
+  font-weight:600;
+
   cursor:pointer;
+
   margin-top:10px;
 }
 
 .update-btn:hover{
-  background:#43a047;
+  background:#ececec;
 }
+
+
+
+/* SUCCESS MESSAGE */
 
 .profile-success{
   text-align:center;
   margin-top:12px;
-  color:#4CAF50;
+
+  color:#8cffc6;
+
   font-size:14px;
+}
+
+
+/* AVATAR VIEWER */
+
+.avatar-viewer{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  background:rgba(0,0,0,0.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:10000;
+}
+
+.avatar-large{
+  max-width:500px;
+  max-height:500px;
+  border-radius:10px;
+  object-fit:cover;
+}
+
+.profile-avatar{
+  cursor:pointer;
+  transition:transform .2s;
+}
+
+.profile-avatar:hover{
+  transform:scale(1.05);
+}
+
+
+.profile-status{
+  margin-top:6px;
+  font-size:14px;
+}
+
+.online-status{
+  color:#22c55e;
+  font-weight:500;
+}
+
+.last-seen{
+  color:#777;
 }
