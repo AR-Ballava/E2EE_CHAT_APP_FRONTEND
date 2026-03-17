@@ -11,7 +11,7 @@ body{
 
 .chat-container{
   display:flex;
-  height:100vh;
+  height:100dvh;
   width:100vw;
   overflow:hidden;
 
@@ -66,4 +66,63 @@ body{
   align-items:center;
 
   z-index:9999;
+}
+
+
+/* CHAT WINDOW */
+
+.chat-window{
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+
+  /* FIX: allow inner scrolling */
+  min-height:0;
+}
+
+
+
+/* PANEL WRAPPERS */
+
+.contact-wrapper{
+  width:420px;
+
+  /* FIX: allow flex children to shrink properly */
+  min-height:0;
+}
+
+.chat-wrapper{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+
+  /* FIX: required for message-area scrolling */
+  min-height:0;
+}
+
+
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width:768px){
+
+  .contact-wrapper,
+  .chat-wrapper{
+    width:100%;
+  }
+
+  /* hide contact when chat open */
+
+  .hide-mobile{
+    display:none;
+  }
+
+  .chat-wrapper{
+    display:none;
+  }
+
+  .show-mobile{
+    display:flex;
+  }
+
 }

@@ -2,26 +2,72 @@
 
 .input-area{
   display:flex;
+  align-items:center;
   gap:10px;
-  padding:12px;
+  padding:10px 14px;
   background:#0f0f0f;
   border-top:1px solid #1f1f1f;
+
+  /* IMPORTANT FOR MOBILE */
+  position:sticky;
+  bottom:0;
+  z-index:10;
+
+  /* FIX: prevents flexbox from shrinking input bar */
+  flex-shrink:0;
+
+  /* iPhone safe area support */
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
 }
+
+
+/* INPUT */
 
 .input-area input{
   flex:1;
-  padding:10px;
+  padding:10px 14px;
   border-radius:20px;
   border:1px solid #2a2a2a;
   background:#0b0b0b;
   color:white;
+  font-size:14px;
 }
 
+
+/* SEND BUTTON */
+
 .input-area button{
-  padding:8px 18px;
+  padding:8px 16px;
   border:none;
   background:white;
   color:black;
   border-radius:20px;
   cursor:pointer;
+  font-weight:500;
+}
+
+.input-area button:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+
+/* MOBILE INPUT */
+
+@media (max-width:768px){
+
+  .input-area{
+    padding:8px 10px;
+  }
+
+  .input-area input{
+    font-size:14px;
+    padding:10px 12px;
+  }
+
+  .input-area button{
+    padding:8px 14px;
+    font-size:14px;
+  }
+
 }

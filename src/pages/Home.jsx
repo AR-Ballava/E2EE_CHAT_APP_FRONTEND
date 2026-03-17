@@ -15,9 +15,14 @@ const Home = () => {
 
         <div className="nav-right">
 
-          <button onClick={()=>navigate("/auth")}>Login</button>
+          <button onClick={()=>navigate("/auth/login")}>
+            Login
+          </button>
 
-          <button className="nav-register" onClick={()=>navigate("/auth")}>
+          <button
+            className="nav-register"
+            onClick={()=>navigate("/auth/register")}
+          >
             Register
           </button>
 
@@ -25,31 +30,39 @@ const Home = () => {
 
       </header>
 
-
       <main className="landing-center">
 
         <h1>
-          Private Messaging <br/>
-          <span>Re-imagined</span>
+          Real-Time Encrypted Chat <br/>
+          <span>Private Messaging</span>
         </h1>
 
-        <p>
-          Real-time encrypted chat built with modern architecture.
-          Secure, fast and minimal communication.
+        <p class="temp-text">
+          Secure, fast and minimal communication. 
+          Use 
+          <a 
+            href="https://temp-mail.org/en/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="temp-badge"
+          >
+            Temp Mail
+          </a> 
+          for temporary email.
         </p>
 
         <div className="cta">
 
           <button
             className="primary"
-            onClick={()=>navigate("/auth")}
+            onClick={()=>navigate("/auth/login")}
           >
             Start Chat
           </button>
 
           <button
             className="ghost"
-            onClick={()=>navigate("/auth")}
+            onClick={()=>navigate("/auth/register")}
           >
             Create Account
           </button>

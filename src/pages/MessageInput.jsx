@@ -20,7 +20,10 @@ export default function MessageInput({ text, setText, send, sendTyping }) {
         }}
       />
 
-      <button onClick={send}>
+      <button
+        onClick={send}
+        disabled={!text.trim()}
+      >
         Send
       </button>
 

@@ -4,10 +4,21 @@ import ContactList from "./ContactList";
 import Profile from "./Profile";
 import "../styles/contactPanel.css";
 
-export default function ContactPanel({ token, contacts, setContacts, messagePreviews, setMessagePreviews, selectedUser, setSelectedUser }) {
+export default function ContactPanel({
+  token,
+  contacts,
+  setContacts,
+  messagePreviews,
+  setMessagePreviews,
+  selectedUser,
+  setSelectedUser
+}) {
 
   const [contactProfiles, setContactProfiles] = useState({});
   const [newContact, setNewContact] = useState("");
+
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [showProfile, setShowProfile] = useState(false);
   const [profileEmail, setProfileEmail] = useState(null);
@@ -15,8 +26,7 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
   const [myProfile, setMyProfile] = useState(null);
 
   function getAvatarColor(text) {
-
-    const colors = ["#4CAF50","#2196F3","#FF9800","#9C27B0","#E91E63"];
+    const colors = ["#4CAF50", "#2196F3", "#FF9800", "#9C27B0", "#E91E63"];
     let hash = 0;
 
     for (let i = 0; i < text.length; i++) {
@@ -27,100 +37,105 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
   }
 
   function formatPreviewTime(timestamp) {
-
     if (!timestamp) return "";
 
     const now = new Date();
     const msgDate = new Date(timestamp);
 
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
 
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
 
     const msgDay = new Date(msgDate);
-    msgDay.setHours(0,0,0,0);
+    msgDay.setHours(0, 0, 0, 0);
 
     if (msgDay.getTime() === today.getTime()) {
-
-      return msgDate.toLocaleTimeString([],{
-        hour:"2-digit",
-        minute:"2-digit"
+      return msgDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
       });
-
     }
 
     if (msgDay.getTime() === yesterday.getTime()) {
       return "Yesterday";
     }
 
-    return msgDate.toLocaleDateString([],{
-      day:"2-digit",
-      month:"2-digit",
-      year:"2-digit"
+    return msgDate.toLocaleDateString([], {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit"
     });
   }
 
-  /* LOAD MY PROFILE */
+  /* ================= SEARCH USERS ================= */
+
+  async function searchUsers(keyword) {
+
+    if (!keyword.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const res = await fetch(
+      `http://localhost:8080/api/contacts/search?keyword=${keyword}`,
+      {
+        headers: { Authorization: "Bearer " + token }
+      }
+    );
+
+    const data = await res.json();
+    setSearchResults(data);
+    setShowSuggestions(true);
+  }
+
+  /* ================= LOAD MY PROFILE ================= */
 
   useEffect(() => {
-
-    fetch("https://e2ee-chat.duckdns.org/api/profile/me", {
+    fetch("http://localhost:8080/api/profile/me", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
       .then(setMyProfile);
-
   }, [token]);
 
-  /* LOAD CONTACTS */
+  /* ================= LOAD CONTACTS ================= */
 
   useEffect(() => {
-
-    fetch("https://e2ee-chat.duckdns.org/api/contacts", {
+    fetch("http://localhost:8080/api/contacts", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
       .then(data => {
-
         const users = data.map(c => c.contactUserId);
         setContacts(users);
         loadContactProfiles(users);
-
       });
-
   }, [token]);
 
-  /* LOAD MESSAGE PREVIEWS */
+  /* ================= LOAD MESSAGE PREVIEWS ================= */
 
   useEffect(() => {
-
-    fetch("https://e2ee-chat.duckdns.org/api/messages/preview", {
+    fetch("http://localhost:8080/api/messages/preview", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
       .then(setMessagePreviews);
-
   }, [token]);
 
   function loadContactProfiles(users) {
-
     users.forEach(email => {
-
-      fetch(`https://e2ee-chat.duckdns.org/api/profile/${email}`, {
+      fetch(`http://localhost:8080/api/profile/${email}`, {
         headers: { Authorization: "Bearer " + token }
       })
         .then(res => res.json())
         .then(profile => {
-
           setContactProfiles(prev => ({
             ...prev,
             [email]: profile
           }));
-
         });
-
     });
   }
 
@@ -129,7 +144,7 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
     if (!username.trim()) return;
 
     const res = await fetch(
-      "https://e2ee-chat.duckdns.org/api/contacts/" + username,
+      "http://localhost:8080/api/contacts/" + username,
       {
         method: "POST",
         headers: { Authorization: "Bearer " + token }
@@ -140,8 +155,10 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
 
       setContacts(prev => [...prev, username]);
       loadContactProfiles([username]);
-      setNewContact("");
 
+      setNewContact("");
+      setSearchResults([]);
+      setShowSuggestions(false);
     }
   }
 
@@ -157,15 +174,61 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
           setProfileEmail={setProfileEmail}
         />
 
-        <h3>Contacts</h3>
+        <h3>Add To Chat List</h3> 
 
         <div className="add-contact">
-          <input
-            placeholder="email or username"
-            value={newContact}
-            onChange={(e) => setNewContact(e.target.value)}
-          />
-          <button onClick={() => addContact(newContact)}>Add</button>
+
+          {/* INPUT ROW */}
+          <div className="add-contact-row">
+            <input
+              placeholder="search email or username"
+              value={newContact}
+              onChange={(e) => {
+                const value = e.target.value;
+                setNewContact(value);
+                searchUsers(value);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+            />
+
+            <button onClick={() => addContact(newContact)}>Add</button>
+          </div>
+
+          {/* 🔥 SUGGESTIONS BELOW INPUT */}
+          {showSuggestions && searchResults.length > 0 && (
+            <div className="search-suggestions">
+
+              {searchResults.map((user, i) => (
+
+                <div
+                  key={i}
+                  className="suggestion-item"
+                  onClick={() => addContact(user.email)}
+                >
+
+                  <div
+                    className="suggestion-avatar"
+                    style={{ backgroundColor: getAvatarColor(user.email) }}
+                  >
+                    {(user.username || user.email).charAt(0).toUpperCase()}
+                  </div>
+
+                  <div className="suggestion-info">
+                    <div className="suggestion-name">
+                      {user.username || "No name"}
+                    </div>
+                    <div className="suggestion-email">
+                      {user.email}
+                    </div>
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+          )}
+
         </div>
 
         <ContactList
@@ -173,12 +236,14 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
           setContacts={setContacts}
           contactProfiles={contactProfiles}
           messagePreviews={messagePreviews}
+          setMessagePreviews={setMessagePreviews}
           selectedUser={selectedUser}
           setSelectedUser={setSelectedUser}
           formatPreviewTime={formatPreviewTime}
           getAvatarColor={getAvatarColor}
           setShowProfile={setShowProfile}
           setProfileEmail={setProfileEmail}
+          token={token}
         />
 
       </div>
@@ -190,6 +255,7 @@ export default function ContactPanel({ token, contacts, setContacts, messagePrev
           onClose={() => setShowProfile(false)}
         />
       )}
+
     </>
   );
 }

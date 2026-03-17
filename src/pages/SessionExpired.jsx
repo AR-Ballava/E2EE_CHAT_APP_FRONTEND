@@ -6,7 +6,7 @@ export default function SessionExpired(){
   const navigate = useNavigate();
 
   function relogin(){
-    navigate("/auth");
+    navigate("/auth/login");
   }
 
   function goHome(){

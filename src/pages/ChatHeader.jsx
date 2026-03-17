@@ -1,7 +1,7 @@
 import { getAvatarColor } from "../utils/avatarColor";
 import "../styles/chatHeader.css";
 
-export default function ChatHeader({ selectedUser, userProfile, setShowProfile, isTyping }) {
+export default function ChatHeader({ selectedUser, userProfile, setShowProfile, isTyping, goBack}) {
 
   function avatar() {
 
@@ -71,22 +71,37 @@ export default function ChatHeader({ selectedUser, userProfile, setShowProfile, 
 
     <div className="chat-header-inner">
 
-      <div
-        className="chat-header-left"
-        onClick={() => setShowProfile(true)}
-      >
+      <div className="chat-header-left">
 
-        <div className="chat-user-avatar">
+        {/* ⭐ MOBILE BACK BUTTON */}
+        <button
+          className="mobile-back"
+          onClick={(e)=>{
+            e.stopPropagation();
+            if(goBack) goBack();
+          }}
+        >
+          ←
+        </button>
+
+        <div
+          className="chat-user-avatar"
+          onClick={()=>setShowProfile(true)}
+        >
           {avatar()}
         </div>
 
-        <div className="chat-user-name">
+        <div
+          className="chat-user-name"
+          onClick={()=>setShowProfile(true)}
+        >
           {userProfile.username || userProfile.email}
         </div>
 
       </div>
 
       <div className="chat-header-right">
+
         {isTyping ? (
 
           <span className="typing-status">

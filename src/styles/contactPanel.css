@@ -7,21 +7,36 @@
   background:#0f0f0f;
   border-right:1px solid #1f1f1f;
   padding:18px;
+
   display:flex;
   flex-direction:column;
+
+  min-width:0;
+  min-height:0; /* allows inner scroll containers */
+
+  /* prevents flexbox from shrinking the sidebar */
+  flex-shrink:0;
 }
 
-/* ADD CONTACT */
 
-.add-contact{
-  display:flex;
-  gap:8px;
-  margin-bottom:18px;
+/* ADD CONTACT */
+.add-contact {
+  display: flex;
+  flex-direction: column;   /* 🔥 THIS FIXES EVERYTHING */
+  gap: 6px;
+  margin-bottom: 18px;
+  flex-shrink: 0;
+}
+
+.add-contact-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .add-contact input{
   flex:1;
-  padding:10px;
+  padding:10px 12px;
   background:#0d0d0d;
   border:1px solid #2a2a2a;
   color:white;
@@ -38,6 +53,7 @@
   cursor:pointer;
 }
 
+
 /* SUGGESTION BOX */
 
 .suggestion-box{
@@ -45,6 +61,9 @@
   border:1px solid #2b2323;
   border-radius:8px;
   margin-bottom:10px;
+
+  /* fixed element above scroll list */
+  flex-shrink:0;
 }
 
 .suggestion-item{
@@ -54,4 +73,99 @@
 
 .suggestion-item:hover{
   background:#2b2626;
+}
+
+
+
+/* MOBILE CONTACT PANEL */
+
+@media (max-width:768px){
+
+  .contact-panel{
+    width:100%;
+    height: 100%;
+    padding:10px;
+    border-right:none;
+  }
+
+  .add-contact{
+    gap:6px;
+  }
+
+  .add-contact input{
+    font-size:14px;
+    padding:9px 10px;
+  }
+
+  .add-contact button{
+    padding:8px 10px;
+    font-size:14px;
+  }
+
+}
+
+
+/* TITLE */
+
+.contact-panel h3{
+  margin:10px 0 0;
+  margin-bottom:10px;
+  font-size:16px;
+  color:#ddd;
+
+  /* keep header fixed above scroll list */
+  flex-shrink:0;
+}
+
+
+
+
+
+.search-suggestions {
+  width: 100%;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 10px;
+  margin-top: 5px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+  background: #1f1f1f;
+}
+
+.suggestion-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.suggestion-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion-name {
+  font-weight: 600;
+}
+
+.suggestion-email {
+  font-size: 12px;
+  color: #aaa;
 }

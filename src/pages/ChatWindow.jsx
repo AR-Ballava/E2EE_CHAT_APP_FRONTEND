@@ -7,7 +7,7 @@ import MessageArea from "./MessageArea";
 import MessageInput from "./MessageInput";
 import Profile from "./Profile";
 
-export default function ChatWindow({ token, selectedUser, setMessagePreviews, setContacts}) {
+export default function ChatWindow({ token, selectedUser, setMessagePreviews, setContacts, goBack}) {
 
   const decoded = jwtDecode(token);
   const currentUser = decoded.sub;
@@ -55,11 +55,26 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
 
           /* MARK DELIVERED */
 
-          if(msg.receiverId === currentUser && msg.id){
+          if (msg.receiverId === currentUser && msg.id) {
 
-            fetch(`https://e2ee-chat.duckdns.org/api/messages/delivered/${msg.id}`,{
-              method:"POST",
-              headers:{Authorization:"Bearer "+authToken}
+            fetch(`http://localhost:8080/api/messages/delivered/${msg.id}`, {
+              method: "POST",
+              headers: { Authorization: "Bearer " + authToken }
+            });
+
+            // ✅ update preview instantly
+            setMessagePreviews(prev => {
+
+              const otherUser = msg.senderId;
+
+              return {
+                ...prev,
+                [otherUser]: {
+                  ...(prev[otherUser] || {}),
+                  status: "DELIVERED"
+                }
+              };
+
             });
 
           }
@@ -91,13 +106,35 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
 
             /* UPDATE PREVIEW */
 
-            setMessagePreviews(prev => ({
-              ...prev,
-              [otherUser]: {
-                content: msg.content,
-                sentAt: msg.sentAt
+            setMessagePreviews(prev => {
+
+              const existing = prev[otherUser] || {};
+
+              let unread = existing.unreadCount || 0;
+
+              if (msg.senderId !== currentUser) {
+
+                if (selectedUserRef.current === otherUser) {
+                  unread = 0; // ✅ chat already open
+                } else {
+                  unread++;
+                }
+
               }
-            }));
+
+              return {
+                ...prev,
+                [otherUser]: {
+                  id: msg.id,
+                  content: msg.content,
+                  sentAt: msg.sentAt,
+                  status: msg.status,
+                  senderId: msg.senderId,
+                  unreadCount: unread
+                }
+              };
+
+            });
 
             /* MOVE CONTACT TO TOP */
 
@@ -119,30 +156,58 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
 
           /* STATUS UPDATES */
 
-          connectedClient.subscribe("/user/queue/status",(payload)=>{
+            connectedClient.subscribe("/user/queue/status",(payload)=>{
 
-            const statusMsg = JSON.parse(payload.body);
+              const statusMsg = JSON.parse(payload.body);
 
-            setMessages(prev => {
+              /* UPDATE MESSAGE LIST */
 
-              let changed = false;
+              setMessages(prev => {
 
-              const updated = prev.map(m => {
+                let changed = false;
 
-                if(m.id === statusMsg.id && m.status !== statusMsg.status){
-                  changed = true;
-                  return { ...m, status: statusMsg.status };
-                }
+                const updated = prev.map(m => {
 
-                return m;
+                  if(m.id === statusMsg.id && m.status !== statusMsg.status){
+                    changed = true;
+                    return { ...m, status: statusMsg.status };
+                  }
+
+                  return m;
+
+                });
+
+                return changed ? updated : prev;
+
+              });
+              
+              setMessagePreviews(prev => {
+
+                const updated = { ...prev };
+
+                Object.keys(updated).forEach(user => {
+
+                  if (updated[user]?.id === statusMsg.id) {
+
+                    updated[user] = {
+                      ...updated[user],
+                      status: statusMsg.status
+                    };
+
+                    // ✅ if READ → remove unread
+                    if (statusMsg.status === "READ") {
+                      updated[user].unreadCount = 0;
+                    }
+
+                  }
+
+                });
+
+                return updated;
 
               });
 
-              return changed ? updated : prev;
-
             });
-
-          });
 
           connectedClient.subscribe("/user/queue/typing",(payload)=>{
 
@@ -203,7 +268,7 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
     const conversationId =
       generateConversationId(currentUser,selectedUser);
 
-    fetch(`https://e2ee-chat.duckdns.org/api/messages/${conversationId}`,{
+    fetch(`http://localhost:8080/api/messages/${conversationId}`,{
       headers:{Authorization:"Bearer "+token}
     })
     .then(res=>res.json())
@@ -223,7 +288,7 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
 
         if(!m.id) return;
 
-        fetch(`https://e2ee-chat.duckdns.org/api/messages/read/${m.id}`,{
+        fetch(`http://localhost:8080/api/messages/read/${m.id}`,{
           method:"POST",
           headers:{Authorization:"Bearer "+token}
         });
@@ -242,20 +307,26 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
 
     if (!bottomRef.current) return;
 
-    if (firstLoadRef.current) {
+    // ✅ ONLY smooth scroll for new messages
+    bottomRef.current.scrollIntoView({
+      behavior: firstLoadRef.current ? "auto" : "smooth"
+    });
 
-      /* INSTANT SCROLL ON CHAT OPEN */
-      bottomRef.current.scrollIntoView({ behavior: "auto" });
-      firstLoadRef.current = false;
-
-    } else {
-
-      /* SMOOTH SCROLL ONLY FOR NEW MESSAGES */
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-
-    }
+    firstLoadRef.current = false;
 
   }, [messages]);
+
+
+  useEffect(() => {
+
+    if (!selectedUser) return;
+
+    // ⏳ wait till DOM renders messages
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
+    }, 0);
+
+  }, [selectedUser]); 
 
 
 
@@ -272,7 +343,7 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
       return;
     }
 
-    fetch(`https://e2ee-chat.duckdns.org/api/profile/${selectedUser}`,{
+    fetch(`http://localhost:8080/api/profile/${selectedUser}`,{
       headers:{Authorization:"Bearer "+token}
     })
     .then(res=>res.json())
@@ -304,13 +375,18 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
 
     /* UPDATE PREVIEW IMMEDIATELY */
 
-    setMessagePreviews(prev => ({
-      ...prev,
-      [selectedUser]: {
-        content: text,
-        sentAt: msg.sentAt
-      }
-    }));
+    // setMessagePreviews(prev => ({
+    //   ...prev,
+    //   [selectedUser]: {
+    //     content: text,
+    //     sentAt: msg.sentAt,
+    //     status: msg.status,
+    //     senderId: currentUser,
+    //     unreadCount: 0
+    //   }
+    // }));
+
+    
 
     /* MOVE CONTACT TO TOP */
 
@@ -385,6 +461,7 @@ export default function ChatWindow({ token, selectedUser, setMessagePreviews, se
             userProfile={userProfile}
             setShowProfile={setShowProfile}
             isTyping={isTyping}
+            goBack={goBack}
           />
 
         </div>

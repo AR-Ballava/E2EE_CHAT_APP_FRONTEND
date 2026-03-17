@@ -13,26 +13,47 @@ export default function Chat({ token }) {
   /* GLOBAL MESSAGE PREVIEWS */
   const [messagePreviews, setMessagePreviews] = useState({});
 
+  /* ⭐ MOBILE CHAT STATE */
+  const [mobileChatOpen, setMobileChatOpen] = useState(false);
+
   return (
 
     <div className="chat-container">
 
-      <ContactPanel
-        token={token}
-        contacts={contacts}
-        setContacts={setContacts}
-        messagePreviews={messagePreviews}
-        setMessagePreviews={setMessagePreviews}
-        selectedUser={selectedUser}
-        setSelectedUser={setSelectedUser}
-      />
+      {/* CONTACT PANEL */}
+      <div className={`contact-wrapper ${mobileChatOpen ? "hide-mobile" : ""}`}>
 
-      <ChatWindow
-        token={token}
-        selectedUser={selectedUser}
-        setMessagePreviews={setMessagePreviews}
-        setContacts={setContacts}
-      />
+        <ContactPanel
+          token={token}
+          contacts={contacts}
+          setContacts={setContacts}
+          messagePreviews={messagePreviews}
+          setMessagePreviews={setMessagePreviews}
+          selectedUser={selectedUser}
+
+          /* ⭐ open chat on mobile */
+          setSelectedUser={(user)=>{
+            setSelectedUser(user);
+            setMobileChatOpen(true);
+          }}
+        />
+
+      </div>
+
+      {/* CHAT WINDOW */}
+      <div className={`chat-wrapper ${mobileChatOpen ? "show-mobile" : ""}`}>
+
+        <ChatWindow
+          token={token}
+          selectedUser={selectedUser}
+          setMessagePreviews={setMessagePreviews}
+          setContacts={setContacts}
+
+          /* ⭐ back button for mobile */
+          goBack={()=>setMobileChatOpen(false)}
+        />
+
+      </div>
 
     </div>
 

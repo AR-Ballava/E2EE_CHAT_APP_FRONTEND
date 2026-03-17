@@ -62,9 +62,9 @@ function App(){
           element={<SessionExpired/>}
         />
 
-        {/* AUTH PAGE */}
+        {/* AUTH PAGE  */}
         <Route 
-          path="/auth" 
+          path="/auth/:type" 
           element={token ? <Navigate to="/chat"/> : <AuthPage setToken={setToken}/>} 
         />
 
