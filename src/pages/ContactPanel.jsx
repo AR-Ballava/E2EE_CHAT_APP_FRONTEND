@@ -79,7 +79,7 @@ export default function ContactPanel({
     }
 
     const res = await fetch(
-      `http://localhost:8080/api/contacts/search?keyword=${keyword}`,
+      `https://e2ee-chat.duckdns.org/api/contacts/search?keyword=${keyword}`,
       {
         headers: { Authorization: "Bearer " + token }
       }
@@ -93,7 +93,7 @@ export default function ContactPanel({
   /* ================= LOAD MY PROFILE ================= */
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/profile/me", {
+    fetch("https://e2ee-chat.duckdns.org/api/profile/me", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -103,7 +103,7 @@ export default function ContactPanel({
   /* ================= LOAD CONTACTS ================= */
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/contacts", {
+    fetch("https://e2ee-chat.duckdns.org/api/contacts", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -117,7 +117,7 @@ export default function ContactPanel({
   /* ================= LOAD MESSAGE PREVIEWS ================= */
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/messages/preview", {
+    fetch("https://e2ee-chat.duckdns.org/api/messages/preview", {
       headers: { Authorization: "Bearer " + token }
     })
       .then(res => res.json())
@@ -126,7 +126,7 @@ export default function ContactPanel({
 
   function loadContactProfiles(users) {
     users.forEach(email => {
-      fetch(`http://localhost:8080/api/profile/${email}`, {
+      fetch(`https://e2ee-chat.duckdns.org/api/profile/${email}`, {
         headers: { Authorization: "Bearer " + token }
       })
         .then(res => res.json())
@@ -144,7 +144,7 @@ export default function ContactPanel({
     if (!username.trim()) return;
 
     const res = await fetch(
-      "http://localhost:8080/api/contacts/" + username,
+      "https://e2ee-chat.duckdns.org/api/contacts/" + username,
       {
         method: "POST",
         headers: { Authorization: "Bearer " + token }

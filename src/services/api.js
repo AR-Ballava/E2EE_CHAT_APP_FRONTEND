@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8080/api"
+  baseURL: "https://e2ee-chat.duckdns.org/api"
 });
 
 /* ADD ACCESS TOKEN TO EVERY REQUEST */
@@ -43,7 +43,7 @@ API.interceptors.response.use(
         const refreshToken = localStorage.getItem("refreshToken");
 
         const res = await axios.post(
-          "http://localhost:8080/api/auth/refresh",
+          "https://e2ee-chat.duckdns.org/api/auth/refresh",
           { refreshToken } // ✅ SEND JSON
         );
 

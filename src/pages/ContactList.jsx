@@ -103,7 +103,7 @@ export default function ContactList({
               currentUser < c ? currentUser + "_" + c : c + "_" + currentUser;
 
             // ✅ 1. Call backend to mark as read
-            fetch(`http://localhost:8080/api/messages/read/conversation/${conversationId}`, {
+            fetch(`https://e2ee-chat.duckdns.org/api/messages/read/conversation/${conversationId}`, {
               method: "POST",
               headers: { Authorization: "Bearer " + token }
             });
